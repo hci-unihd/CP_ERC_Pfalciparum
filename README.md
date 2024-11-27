@@ -7,6 +7,7 @@ The main workhorse is [cellpose](https://www.cellpose.org/), which is fine-tuned
 
 
 # Installation
+TODO add setup.py and change code accordingly
 1. Install [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 2. Install the dependencies:
 ```
@@ -20,14 +21,31 @@ conda activate kahrp
 # Overview
 
 ## Trained models
-We provide two trained models in the `models` directory. The model `rbc TODO` is trained to segment RBCs 
-and the model `parasite TODO` is trained to segment parasites. To try out these models on the sample image,
+We provide two trained models in the `models` directory. The model `rbc[...]` was trained to segment RBCs, the model 
+`parasite_late[...]` is trained to segment late-stage parasites, and the model `parasite_joint[...]` was jointly trained
+on ring- and late-stage parasites. To try out these models on the sample image,
 run
 ```
 python run_cellpose.py
 ```
-The results will be saved in `data/sample/results`.
+The three results will be saved in `data/sample_data/sample_stack/results`, a `.png` showing the segmentation masks for 
+one z-slice will be saved in `data/figures`, and a `.tiff` image containing all the full segmentation stacks will be saved
+there to. To inspect it, run
 
+```
+python run_napari.py
+```
+and click the `Split Channels` botton.
+
+<img src="data/figures/sample_stack_z_slice_20_preds.png" alt="z-slice of segmentations" width="500"/>
+
+
+<p align="center">
+  <img src="sample_stack_raw.png" alt="Image 1" width="200"/>
+  <img src="sample_stack_rbc_seg.png" alt="Image 2" width="200"/>
+  <img src="sample_stack_parasite_late_seg.png" alt="Image 3" width="200"/>
+  <img src="sample_stack_joint_seg.png" alt="Image 4" width="200"/>
+</p>
 
 ## Directories
 The file `path` contains a path to the location of the data. By default, it is set
@@ -57,7 +75,7 @@ functions. For instance, to segment the sample image with the full models provid
 ```
 python run_cellpose.py
 ```
-The resulting segmentations will be saved in `data/sample/results`.
+The resulting segmentations will be saved in `data/sample_data/sample_stack/results`.
 
 Description of the lower-level scripts:  
 `train_cellpose.py`: Code for fine-tuning cellpose  
@@ -80,7 +98,7 @@ These notebooks are used to create the quantitative evaluation panels in Figure 
 the shells  
 `eval_parasites`: Depicts metrics of the parasite model before post-processing  
 
-These notebooks provide untilities  
+These notebooks provide utilities  
 `save_predictions`: Saves segmented images without post-processing
 `post_prosessing`: Computes metrics after postprocessing and finds good parameters for both RBCs 
 and parasites (not all are used as default as the "wholelifecycle" data had different issues than the

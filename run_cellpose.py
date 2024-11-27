@@ -2,7 +2,7 @@ import h5py
 import os
 import cellpose.models
 import numpy as np
-from utils import get_data, datasets_from_model, load_data, get_path
+from utils.utils import get_data, datasets_from_model, load_data, get_path
 import ray
 
 def run_cellpose(data_dir,
@@ -88,16 +88,15 @@ def run_cellpose(data_dir,
 
 
 def main():
-    model_dir = os.path.join(get_path(), "RBC_labelled/"  # change to the desired dataset
-    )
 
-    data_dir = os.path.join(get_path(), "RBC_labelled")  # change to the desired dataset
+    model_path = os.path.join(get_path(), "..")  # change to the desired model directory
+    data_dir = os.path.join(get_path(), "sample_data")  # change to the desired dataset
 
-    datasets = ["wholelife"]
+    datasets = ["sample_subset"]
     model_names = [
-        "cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1"  # change to the trained model's name
-        # "cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1"
-        # "cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1"
+        "rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",  # change to the trained model's name, do not include the epoch
+        "parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",
+        "parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",
     ]
 
     #TODO: change paths and model names to work on the example data
@@ -119,7 +118,6 @@ def main():
     # ray manages multiple gpus
     ray.init(include_dashboard=False,
              _redis_password="my_ray_password",  # change
-             _temp_dir=os.path.expanduser("~/scratch/ray_temp"),
              num_gpus=n_gpus,
              num_cpus=40)
 
@@ -129,9 +127,9 @@ def main():
 
     ready, unready = ray.wait([run_cellpose_rmt.remote(
                      data_dir=data_dir,
-                     model_dir=model_dir,
                      datasets={dataset: shared_datasets[dataset] for dataset in datasets},
                      model_name=model_name,
+                     model_dir=model_path,
                      stitch_threshold=stitch_threshold,
                      epoch=epoch,
                      anisotropy=anisotropy,
@@ -151,6 +149,65 @@ def main():
 
     ray.shutdown()
 
+    # save the results as tiff files, adapt directory and file names when running this script directly
+    dataset = "sample_subset"
+    import skimage.io
+    import matplotlib.pyplot as plt
+
+    raw_file = os.path.join(data_dir, dataset, "data", "sample_stack.h5")
+
+    rbc_file = os.path.join(data_dir, dataset, "results",
+                            "rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
+                            "sample_stack_rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+
+    para_late_file = os.path.join(data_dir, dataset, "results",
+                                  "parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
+                                  "sample_stack_parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+
+    para_joint_file = os.path.join(data_dir, dataset, "results",
+                                   "parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
+                                   "sample_stack_parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+
+
+    with h5py.File(raw_file, "r") as f:
+        raw = f["data"][:][0]
+    with h5py.File(rbc_file, "r") as f:
+        rbc_seg = f["seg"][:][0]
+    with h5py.File(para_late_file, "r") as f:
+        para_late_seg = f["seg"][:][0]
+    with h5py.File(para_joint_file, "r") as f:
+        para_joint_seg = f["seg"][:][0]
+
+    fig, ax = plt.subplots(1, 4, figsize=(10, 3))
+    z_slice = 20
+
+    file_name = "sample_stack"
+    fig_path = os.path.join(get_path(), "figures")
+
+    ax[0].imshow(raw[z_slice], cmap="gray")
+    ax[0].set_title("Raw")
+    ax[0].axis("off")
+    ax[1].imshow(rbc_seg[z_slice], cmap="tab20", interpolation="none")
+    ax[1].set_title("RBC")
+    ax[1].axis("off")
+    ax[2].imshow(para_late_seg[z_slice], cmap="tab20", interpolation="none")
+    ax[2].set_title("Parasite Late Model")
+    ax[2].axis("off")
+    ax[3].imshow(para_joint_seg[z_slice], cmap="tab20", interpolation="none")
+    ax[3].set_title("Parasite Joint Model")
+    ax[3].axis("off")
+    fig.suptitle(f"Sample stack z-slice {z_slice}")
+    fig.savefig(os.path.join(fig_path, file_name + f"_z_slice_{z_slice}_preds.png"))
+
+
+    stack = np.stack([raw,
+                      rbc_seg,
+                      para_late_seg,
+                      para_joint_seg])
+
+    stack = np.moveaxis(stack, 0, 1)
+
+    skimage.io.imsave(os.path.join(fig_path, file_name + "_preds.tiff"), stack, imagej=True)
 
 if __name__ == "__main__":
     main()
