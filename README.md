@@ -44,7 +44,7 @@ and click the `Split Channels` botton.
   <img src="data/figures/sample_stack_raw.png" alt="Raw" width="200"/>
   <img src="data/figures/sample_stack_rbc_seg.png" alt="RBC" width="200"/>
   <img src="data/figures/sample_stack_parasite_late_seg.png" alt="Parasite late" width="200"/>
-  <img src="data/figures/sample_stack_joint_seg.png" alt="Parasite joint" width="200"/>
+  <img src="data/figures/sample_stack_parasite_joint_seg.png" alt="Parasite joint" width="200"/>
 </p>
 
 ## Directories
