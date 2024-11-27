@@ -50,7 +50,7 @@ def pipeline(data_path,
 def main():
     #############################################
     # change parameters here as needed
-    data_path = os.path.join(get_path(), "RBC_labelled")  # change data path as needed
+    data_path = os.path.join(get_path(), "RBC_labelled")  # change data path as needed, e.g. to "parasite_labelled"
 
     # list of lists of datasets on which the model is to be trained jointly
     datasets_list = [["valid1"], ["valid2"], ["valid3"],
