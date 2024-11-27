@@ -5,7 +5,7 @@ from cellpose.utils import stitch3D
 import numpy as np
 import skimage
 
-from utils import get_data, datasets_from_model, load_data, handle_small_segments_old, \
+from utils.utils import get_data, datasets_from_model, load_data, handle_small_segments_old, \
     smooth_segments, relabel, load_predictions, get_shells, handle_small_segments_simple,\
     merge_in_rbc, get_path
 

@@ -1,4 +1,4 @@
-from utils import load_data, get_data, get_path, train_cellpose, slice_by_mode, train_test_idx
+from utils.utils import load_data, get_data, get_path, train_cellpose, slice_by_mode, train_test_idx
 import numpy as np
 import os
 import ray

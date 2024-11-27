@@ -17,6 +17,10 @@ conda env create -f environment.yml
 ```
 conda activate kahrp
 ```
+4. Install the utils
+```
+python setup.py install
+```
 
 # Overview
 

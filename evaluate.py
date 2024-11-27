@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import h5py
-from utils import get_metrics, datasets_from_model, get_data, get_eval_string, get_path
+from utils.utils import get_metrics, datasets_from_model, get_data, get_eval_string, get_path
 import pickle
 
 
