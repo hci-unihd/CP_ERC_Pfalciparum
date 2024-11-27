@@ -37,14 +37,14 @@ python run_napari.py
 ```
 and click the `Split Channels` botton.
 
-<img src="data/figures/sample_stack_z_slice_20_preds.png" alt="z-slice of segmentations" width="500"/>
+<img src="data/figures/sample_stack_z_slice_20_preds.png" alt="z-slice of segmentations" width="700"/>
 
 
 <p align="center">
-  <img src="sample_stack_raw.png" alt="Image 1" width="200"/>
-  <img src="sample_stack_rbc_seg.png" alt="Image 2" width="200"/>
-  <img src="sample_stack_parasite_late_seg.png" alt="Image 3" width="200"/>
-  <img src="sample_stack_joint_seg.png" alt="Image 4" width="200"/>
+  <img src="data/figures/sample_stack_raw.png" alt="Raw" width="200"/>
+  <img src="data/figures/sample_stack_rbc_seg.png" alt="RBC" width="200"/>
+  <img src="data/figures/sample_stack_parasite_late_seg.png" alt="Parasite late" width="200"/>
+  <img src="data/figures/sample_stack_joint_seg.png" alt="Parasite joint" width="200"/>
 </p>
 
 ## Directories
