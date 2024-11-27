@@ -13,13 +13,16 @@ from skimage import measure
 import cv2
 import matplotlib.pyplot as plt
 import pickle
+from pkg_resources import resource_stream
+
 
 # load data path from file
 def get_path():
-    with open("path", "r") as file:
+
+    with resource_stream(__name__, os.path.join("..", "path")) as file:
         lines = file.readlines()
 
-    lines = [line.split(" ") for line in lines]
+    lines = [line.decode('ascii').split(" ") for line in lines]
     path_dict = {line[0]: line[1].strip("\n") for line in lines}
 
     try:
