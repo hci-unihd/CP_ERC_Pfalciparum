@@ -22,8 +22,8 @@ def run_cellpose(data_dir,
     if model_dir is None:
         model_dir = data_dir
 
-    model_name = model_name + f"_epoch_{epoch}"
-
+    if epoch is not None:
+        model_name = model_name + f"_epoch_{epoch}"
     model = cellpose.models.CellposeModel(gpu=True,
                                           pretrained_model=os.path.join(model_dir,
                                                                         "models",
@@ -52,8 +52,8 @@ def run_cellpose(data_dir,
                                           resample=True,
                                           augment=True,
                                           stitch_threshold=stitch_threshold)
-        elif "3D" in model_name:
-            aniso = anisotropy if "3D_iso" in model_name else None
+        else:
+            aniso = anisotropy if ("3D_iso" in model_name or model_name.endswith("model")) else None
             pred_masks, _, _ = model.eval(list(imgs.copy()),
                                           batch_size=32,
                                           channels=[0, 0],
@@ -94,16 +94,14 @@ def main():
 
     datasets = ["sample_subset"]
     model_names = [
-        "rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",  # change to the trained model's name, do not include the epoch
-        "parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",
-        "parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1",
+        "erythrocyte_model",  # change to the trained model's name, do not include the epoch
+        "late_stage_model",
+        "joint_model",
     ]
-
-    #TODO: change paths and model names to work on the example data
 
     stitch_threshold = 0.1
     anisotropy = 3.2
-    epoch = 499
+    epoch = None
     n_gpus = 1
     n_chunks = n_gpus
 
@@ -157,16 +155,16 @@ def main():
     raw_file = os.path.join(data_dir, dataset, "data", "sample_stack.h5")
 
     rbc_file = os.path.join(data_dir, dataset, "results",
-                            "rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
-                            "sample_stack_rbc_cellpose_data_valid1_valid2_valid3_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+                            "erythrocyte_model",
+                            "sample_stack_erythrocyte_model.h5")
 
     para_late_file = os.path.join(data_dir, dataset, "results",
-                                  "parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
-                                  "sample_stack_parasite_late_cellpose_data_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+                                  "late_stage_model",
+                                  "sample_stack_late_stage_model.h5")
 
     para_joint_file = os.path.join(data_dir, dataset, "results",
-                                   "parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2",
-                                   "sample_stack_parasite_joint_cellpose_data_mask-r_mask-ts_by_stack_mode_3D_iso_min_train_masks_0_seed_0_fold_0_of_1_epoch_499_aniso_3.2.h5")
+                                   "joint_model",
+                                   "sample_stack_joint_model.h5")
 
 
     with h5py.File(raw_file, "r") as f:
@@ -188,13 +186,13 @@ def main():
     ax[0].set_title("Raw")
     ax[0].axis("off")
     ax[1].imshow(rbc_seg[z_slice], cmap="tab20", interpolation="none")
-    ax[1].set_title("RBC")
+    ax[1].set_title("Erythrocyte Model")
     ax[1].axis("off")
     ax[2].imshow(para_late_seg[z_slice], cmap="tab20", interpolation="none")
-    ax[2].set_title("Parasite Late Model")
+    ax[2].set_title("Late Stage Model")
     ax[2].axis("off")
     ax[3].imshow(para_joint_seg[z_slice], cmap="tab20", interpolation="none")
-    ax[3].set_title("Parasite Joint Model")
+    ax[3].set_title("Joint Model")
     ax[3].axis("off")
     fig.suptitle(f"Sample stack z-slice {z_slice}")
     fig.savefig(os.path.join(fig_path, file_name + f"_z_slice_{z_slice}_preds.png"))

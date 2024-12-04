@@ -25,8 +25,8 @@ python setup.py install
 # Overview
 
 ## Trained models
-We provide two trained models in the `models` directory. The model `rbc[...]` was trained to segment RBCs, the model 
-`parasite_late[...]` is trained to segment late-stage parasites, and the model `parasite_joint[...]` was jointly trained
+We provide two trained models in the `models` directory. The `erythrocyte_model` was trained to segment RBCs, the model 
+`late_stage_model` is trained to segment late-stage parasites, and the model `joint_model` was jointly trained
 on ring- and late-stage parasites. To try out these models on the sample image,
 run
 ```
@@ -43,13 +43,22 @@ and click the `Split Channels` botton.
 
 <img src="data/figures/sample_stack_z_slice_20_preds.png" alt="z-slice of segmentations" width="700"/>
 
-
 <p align="center">
   <img src="data/figures/sample_stack_raw.png" alt="Raw" width="200"/>
   <img src="data/figures/sample_stack_rbc_seg.png" alt="RBC" width="200"/>
   <img src="data/figures/sample_stack_parasite_late_seg.png" alt="Parasite late" width="200"/>
   <img src="data/figures/sample_stack_parasite_joint_seg.png" alt="Parasite joint" width="200"/>
 </p>
+
+To obtain membrane segmentations, run `utils.get_shells` on the segmented images.
+
+```
+import h5py
+from utils.utils import get_shells
+with h5py.File("rbc_segmentation.h5", "r") as f:
+    rbc_seg = f["seg"][:]
+rbc_shells = get_shells(rbc_seg)
+```
 
 ## Directories
 The file `path` contains a path to the location of the data. By default, it is set
