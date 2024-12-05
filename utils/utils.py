@@ -200,7 +200,7 @@ def handle_small_segments_old(seg, min_size, nbhd_size=1):
             seg[seg == id] = 0
 
         nb_ids = np.append(nb_ids,
-                           [id])  # add self as neighbor #todo omit self here
+                           [id])  # add self as neighbor
 
         props = {"nb_ids": nb_ids}
 
@@ -436,7 +436,7 @@ def handle_small_segments(seg, min_size, nbhd_size=1, contact_thres=0.1):
             seg[seg == id] = 0
 
         nb_ids = np.append(nb_ids,
-                           [id])  # add self as neighbor #todo omit self here
+                           [id])  # add self as neighbor
 
         props = {"nb_ids": nb_ids,
                  "nbhd_size": nbhd_mask_bbox.sum(),
@@ -657,7 +657,7 @@ def get_shells(seg, erosion_radius=1, dilation_radius=1):
     return shell_img
 
 def compute_auc(data_dict, datasets=None, stage="pred_3D", gt_stage="gt"):
-    # compte the area under the average precision curve. This is the final metric.
+    # compute the area under the average precision curve. This is the final metric.
     all_metrics = []
 
     if datasets is None:
@@ -768,7 +768,8 @@ def train_test_auc(cv_model_names,
                    stitch_threshold=0.1,
                    anisotropy=3.2,
                    ax=None,
-                   return_metrics=False):
+                   return_metrics=False,
+                   shells=False):
 
     # load pre-computed metrics
     cv_metrics = load_cv_metrics(target_dir,
@@ -776,7 +777,8 @@ def train_test_auc(cv_model_names,
                                  cv_model_names,
                                  n_folds=n_folds,
                                  stitch_threshold=stitch_threshold,
-                                 anisotropy=anisotropy)
+                                 anisotropy=anisotropy,
+                                 shells=shells)
 
     # separate by train and test
     cv_aps_train = aps_by_train_test(cv_metrics,
@@ -824,7 +826,7 @@ def train_test_auc(cv_model_names,
     return ax
 
 
-def get_cv_metric_file_names(cv_model_name, n_folds=10, stitch_threshold=0.1, anisotropy=3.2, epoch=499):
+def get_cv_metric_file_names(cv_model_name, n_folds=10, stitch_threshold=0.1, anisotropy=3.2, epoch=499, shells=False):
     # create list of model names with fold for the cv_model_name
     cv_metric_file_names = []
     epoch_str = f"_epoch_{epoch}"
@@ -833,6 +835,8 @@ def get_cv_metric_file_names(cv_model_name, n_folds=10, stitch_threshold=0.1, an
         eval_str = eval_str + f"_fold_{j}_of_{n_folds}"
         eval_str = eval_str + epoch_str
         eval_str = get_eval_string(eval_str, stitch_threshold, anisotropy)
+        if shells:
+            eval_str = eval_str + "_shells"
         cv_metric_file_names.append(f"metrics_{eval_str}.pkl")
     return cv_metric_file_names
 
@@ -857,11 +861,18 @@ def datasets_from_model(model_name):
 
 
 # load precomputed metrics for whole cross-val experiments
-def load_cv_metrics(target_dir, dataset, cv_model_names, n_folds=10, stitch_threshold=0.1, anisotropy=3.2, epoch=499):
+def load_cv_metrics(target_dir,
+                    dataset,
+                    cv_model_names,
+                    n_folds=10,
+                    stitch_threshold=0.1,
+                    anisotropy=3.2,
+                    epoch=499,
+                    shells=False):
     cv_metrics = []
     for cv_model_name in cv_model_names:
         # get list of metric file names by fold
-        fold_names = get_cv_metric_file_names(cv_model_name, n_folds, stitch_threshold, anisotropy, epoch)
+        fold_names = get_cv_metric_file_names(cv_model_name, n_folds, stitch_threshold, anisotropy, epoch, shells=shells)
         # load the metrics
         cv_metrics.append(load_metrics(target_dir, dataset, fold_names))
     return cv_metrics
@@ -878,6 +889,8 @@ def load_metrics(target_dir, dataset, metric_file_names):
     for metric_file_name in metric_file_names:
         metrics_by_model = []
         exp_name = metric_file_name.removesuffix(".pkl").removeprefix("metrics_")
+        if "shells" in exp_name:
+            exp_name = exp_name.removesuffix("_shells")
         for dataset in datasets:
             with open(os.path.join(target_dir, dataset, "results", exp_name, metric_file_name), 'rb') as handle:
                 metrics_by_model.append(pickle.load(handle))
