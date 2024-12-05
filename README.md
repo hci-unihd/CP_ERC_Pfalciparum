@@ -7,7 +7,6 @@ The main workhorse is [cellpose](https://www.cellpose.org/), which is fine-tuned
 
 
 # Installation
-TODO add setup.py and change code accordingly
 1. Install [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 2. Install the dependencies:
 ```
@@ -60,17 +59,22 @@ with h5py.File("rbc_segmentation.h5", "r") as f:
 rbc_shells = get_shells(rbc_seg)
 ```
 
-## Directories
+## Directories and data
 The file `path` contains a path to the location of the data. By default, it is set
 to the data directory in the repo, but can be changed. All data, results, trained 
 models and figures will be saved there.
 
-Place your data into the data directory following the convention 
-`data_dir/major_dataset/subsets`, where `subsets` are datasets that might be used 
+The data is hosted at [Zenodo](https://doi.org/10.5281/zenodo.14281268). Please download and unpack it. Then
+place it into the `data` directory. The data should be structured following the convention 
+`data/major_dataset/subsets`, where `subsets` are datasets that might be used 
 jointly for training. Models trained on subsets of `major_dataset` will be saved in 
-`data_dir/major_dataset/models`. Each `subset` should contain a subdirectory `data`,
-where the actualy data lies, and one subdirectory `results`, where predictions and metrics
+`data/major_dataset/models`. Each `subset` should contain a subdirectory `data`,
+where the actual data lies, and one subdirectory `results`, where predictions and metrics
 for this subset will be saved.
+
+You can also place your own data in to this directory following the same structure to segment your raw data.
+
+
 
 ## Scripts
 For the main functionality, set the parameters in `full_pipeline.py` and `post_process.py`. Then run both scripts. This
